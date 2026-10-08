@@ -162,6 +162,17 @@
       if (!stored.devices[i].sim) {
         stored.devices[i].sim = createSimState();
       }
+      if (!stored.devices[i].alertHistory) {
+        stored.devices[i].alertHistory = [];
+      }
+      if (!stored.devices[i].alertTracking) {
+        stored.devices[i].alertTracking = {
+          isInAlert: false,
+          alertStartTime: null,
+          currentEventType: null,
+          peakPpm: 0
+        };
+      }
     }
     return stored;
   }
