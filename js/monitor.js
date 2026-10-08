@@ -14,7 +14,20 @@ Aero.onReady(function () {
   var modal = Aero.el('device-modal');
   var modalClose = Aero.el('modal-close');
   var currentDeviceIndex = -1;
+  var currentDeviceId = null;
   var modalUnsubscribe = null;
+
+  var isPersonnel = user.role === 'personnel';
+  var reportTypeButtons = Aero.el('device-report-types');
+  var createModal = Aero.el('create-report-modal');
+  var createModalClose = Aero.el('create-report-close');
+  var createModalCancel = Aero.el('create-report-cancel');
+  var createReportForm = Aero.el('create-report-form');
+  var noteTextarea = Aero.el('report-note');
+  var charCount = Aero.el('note-char-count');
+  var selectedType = null;
+
+  if (isPersonnel && reportTypeButtons) reportTypeButtons.hidden = false;
 
   function esc(value) {
     return Aero.esc(value);
@@ -96,6 +109,7 @@ Aero.onReady(function () {
     if (!device) return;
 
     currentDeviceIndex = index;
+    currentDeviceId = device.nodeId || (rooms[index] && rooms[index].nodeId) || null;
     var room = rooms[index];
 
     Aero.el('modal-room').textContent = esc(device.room);
@@ -159,16 +173,94 @@ Aero.onReady(function () {
       modalBackdrop.hidden = true;
       modal.hidden = true;
       currentDeviceIndex = -1;
+      currentDeviceId = null;
     }, 250);
     document.body.style.overflow = '';
   }
 
+  function updateCharCount() {
+    var len = noteTextarea.value.length;
+    charCount.textContent = len + '/500 characters';
+    charCount.classList.remove('near-limit', 'over-limit');
+    if (len >= 500) charCount.classList.add('over-limit');
+    else if (len >= 450) charCount.classList.add('near-limit');
+  }
+
+  function openCreateModal(type) {
+    if (!createModal || !createReportForm || !currentDeviceId) return;
+    selectedType = type;
+    createReportForm.reset();
+    var room = null;
+    for (var i = 0; i < rooms.length; i++) {
+      if (rooms[i].nodeId === currentDeviceId) { room = rooms[i]; break; }
+    }
+    Aero.el('report-device-label').textContent = room
+      ? room.room + ' (' + room.nodeId + ')'
+      : currentDeviceId;
+    Aero.el('report-type-label').textContent = Aero.REPORT_TYPE_LABELS[type] || type;
+    updateCharCount();
+    createModal.hidden = false;
+    requestAnimationFrame(function () {
+      createModal.classList.add('is-open');
+    });
+    noteTextarea.focus();
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCreateModal() {
+    if (!createModal) return;
+    createModal.classList.remove('is-open');
+    setTimeout(function () {
+      createModal.hidden = true;
+    }, 250);
+    selectedType = null;
+  }
+
+  function handleCreateSubmit(e) {
+    e.preventDefault();
+    var deviceId = currentDeviceId;
+    var type = selectedType;
+    var note = noteTextarea.value.trim();
+
+    if (!deviceId || !type) {
+      Aero.toast('No device or report type selected', 'error');
+      return;
+    }
+
+    var result = Aero.createReport(type, deviceId, note);
+    if (result.ok) {
+      Aero.toast('Report submitted', 'success');
+      closeCreateModal();
+    } else {
+      Aero.toast(result.message, 'error');
+    }
+  }
+
+  if (isPersonnel) {
+    var typeBtns = reportTypeButtons.querySelectorAll('[data-report-type]');
+    for (var t = 0; t < typeBtns.length; t++) {
+      typeBtns[t].addEventListener('click', function (event) {
+        openCreateModal(event.currentTarget.getAttribute('data-report-type'));
+      });
+    }
+    createModalClose.addEventListener('click', closeCreateModal);
+    createModalCancel.addEventListener('click', closeCreateModal);
+    createReportForm.addEventListener('submit', handleCreateSubmit);
+    noteTextarea.addEventListener('input', updateCharCount);
+  }
+
   function handleKeydown(e) {
-    if (e.key === 'Escape' && !modal.hidden) closeModal();
+    if (e.key === 'Escape') {
+      if (createModal && !createModal.hidden) { closeCreateModal(); return; }
+      if (!modal.hidden) closeModal();
+    }
   }
 
   function handleBackdropClick(e) {
-    if (e.target === modalBackdrop) closeModal();
+    if (e.target === modalBackdrop) {
+      if (createModal && !createModal.hidden) { closeCreateModal(); return; }
+      closeModal();
+    }
   }
 
   modalClose.addEventListener('click', closeModal);

@@ -24,7 +24,6 @@
         <h1 class="card-title">My Reports</h1>
         <p class="muted">Reports you have submitted</p>
       </div>
-      <button type="button" class="btn btn-primary" id="create-report-btn">Create Report</button>
     </div>
 
     <section class="stats" style="margin-bottom:18px">
@@ -53,7 +52,7 @@
           <tbody id="reports-body"></tbody>
         </table>
       </div>
-      <p class="empty" id="reports-empty" hidden>No reports submitted yet. Click "Create Report" to log an issue.</p>
+      <p class="empty" id="reports-empty" hidden>No reports submitted yet. Open a device on the dashboard and use "Create Report" inside the device details.</p>
 
       <div class="pagination" id="pagination" style="display:flex; justify-content:center; gap:6px; margin-top:16px; flex-wrap:wrap"></div>
     </section>
@@ -93,49 +92,6 @@
       <span class="report-detail-label" style="margin-top:0">Note:</span>
       <div class="report-detail-note" id="detail-note"></div>
     </div>
-  </div>
-</div>
-
-<div class="modal" id="create-report-modal" role="dialog" aria-modal="true" aria-labelledby="create-report-title" hidden>
-  <div class="modal-header">
-    <h2 class="modal-title" id="create-report-title">Create Report</h2>
-    <button class="modal-close" id="create-report-close" aria-label="Close modal">&times;</button>
-  </div>
-  <div class="modal-content">
-    <form id="create-report-form" class="report-form">
-      <div class="field">
-        <label for="report-device">Device <span style="color:var(--bad)">*</span></label>
-        <select id="report-device" required>
-          <option value="">Select a device</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>Report Type <span style="color:var(--bad)">*</span></label>
-        <div class="row" style="gap:16px; flex-wrap:wrap" role="radiogroup" aria-label="Report type">
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1; min-width:140px">
-            <input type="radio" name="report-type" value="alert_fixed" checked style="width:18px; height:18px; accent-color:var(--c-start)">
-            <span>Alert Fixed</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1; min-width:140px">
-            <input type="radio" name="report-type" value="maintenance_complete" style="width:18px; height:18px; accent-color:var(--c-start)">
-            <span>Maintenance Complete</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1; min-width:140px">
-            <input type="radio" name="report-type" value="broken_device" style="width:18px; height:18px; accent-color:var(--c-start)">
-            <span>Broken Device</span>
-          </label>
-        </div>
-      </div>
-      <div class="field">
-        <label for="report-note">Note (optional)</label>
-        <textarea id="report-note" maxlength="500" placeholder="Describe the issue or resolution..."></textarea>
-        <div class="char-count" id="note-char-count">0/500 characters</div>
-      </div>
-      <div class="row" style="justify-content:flex-end; margin-top:8px; gap:10px">
-        <button type="button" class="btn btn-ghost" id="create-report-cancel">Cancel</button>
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </div>
-    </form>
   </div>
 </div>
 

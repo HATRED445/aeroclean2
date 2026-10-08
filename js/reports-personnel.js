@@ -9,9 +9,7 @@ Aero.onReady(function () {
   var PAGE_SIZE = 25;
   var currentPage = 1;
   var filteredReports = [];
-  var rooms = Telemetry.ROOMS;
 
-  var createReportBtn = Aero.el('create-report-btn');
   var reportsBody = Aero.el('reports-body');
   var reportsEmpty = Aero.el('reports-empty');
   var reportsWrap = Aero.el('reports-wrap');
@@ -19,13 +17,6 @@ Aero.onReady(function () {
   var modalBackdrop = Aero.el('report-modal-backdrop');
   var detailModal = Aero.el('report-detail-modal');
   var detailClose = Aero.el('report-detail-close');
-  var createModal = Aero.el('create-report-modal');
-  var createClose = Aero.el('create-report-close');
-  var createCancel = Aero.el('create-report-cancel');
-  var createForm = Aero.el('create-report-form');
-  var deviceSelect = Aero.el('report-device');
-  var noteTextarea = Aero.el('report-note');
-  var charCount = Aero.el('note-char-count');
 
   function timeLabel(iso) {
     var date = new Date(iso);
@@ -62,21 +53,6 @@ Aero.onReady(function () {
   function truncate(str, len) {
     if (!str) return '\u2014';
     return str.length > len ? esc(str.slice(0, len)) + '\u2026' : esc(str);
-  }
-
-  function populateDeviceSelect() {
-    deviceSelect.innerHTML = '<option value="">Select a device</option>' +
-      rooms.map(function (room) {
-        return '<option value="' + esc(room.nodeId) + '">' + esc(room.room) + ' (' + esc(room.nodeId) + ')</option>';
-      }).join('');
-  }
-
-  function updateCharCount() {
-    var len = noteTextarea.value.length;
-    charCount.textContent = len + '/500 characters';
-    charCount.classList.remove('near-limit', 'over-limit');
-    if (len >= 500) charCount.classList.add('over-limit');
-    else if (len >= 450) charCount.classList.add('near-limit');
   }
 
   function loadReports() {
@@ -187,72 +163,11 @@ Aero.onReady(function () {
     document.body.style.overflow = '';
   }
 
-  function openCreateModal() {
-    createForm.reset();
-    populateDeviceSelect();
-    updateCharCount();
-    modalBackdrop.hidden = false;
-    createModal.hidden = false;
-    requestAnimationFrame(function () {
-      modalBackdrop.classList.add('is-open');
-      createModal.classList.add('is-open');
-    });
-    deviceSelect.focus();
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeCreateModal() {
-    modalBackdrop.classList.remove('is-open');
-    createModal.classList.remove('is-open');
-    setTimeout(function () {
-      modalBackdrop.hidden = true;
-      createModal.hidden = true;
-    }, 250);
-    document.body.style.overflow = '';
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    var deviceId = deviceSelect.value;
-    var type = createForm.querySelector('input[name="report-type"]:checked').value;
-    var note = noteTextarea.value.trim();
-
-    if (!deviceId) {
-      deviceSelect.focus();
-      deviceSelect.classList.add('has-error');
-      return;
-    }
-
-    var result = Aero.createReport(type, deviceId, note);
-    if (result.ok) {
-      Aero.toast('Report submitted', 'success');
-      closeCreateModal();
-      loadReports();
-    } else {
-      Aero.toast(result.message, 'error');
-    }
-  }
-
-  createReportBtn.addEventListener('click', openCreateModal);
-  createClose.addEventListener('click', closeCreateModal);
-  createCancel.addEventListener('click', closeCreateModal);
-  createForm.addEventListener('submit', handleSubmit);
-  noteTextarea.addEventListener('input', updateCharCount);
-  deviceSelect.addEventListener('change', function () {
-    this.classList.remove('has-error');
-  });
-
   modalBackdrop.addEventListener('click', function (e) {
-    if (e.target === modalBackdrop) {
-      if (!createModal.hidden) closeCreateModal();
-      else if (!detailModal.hidden) closeDetailModal();
-    }
+    if (e.target === modalBackdrop) closeDetailModal();
   });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      if (!createModal.hidden) closeCreateModal();
-      else if (!detailModal.hidden) closeDetailModal();
-    }
+    if (e.key === 'Escape' && !detailModal.hidden) closeDetailModal();
   });
 
   detailClose.addEventListener('click', closeDetailModal);

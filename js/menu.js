@@ -9,21 +9,26 @@ Aero.onReady(function () {
   if (!user || user.status !== 'active') return;
 
   var page = window.location.pathname.split('/').pop() || 'index.html';
-  var links = [
-    { href: 'dashboard-monitor.html', label: 'Dashboard', section: 'menu' },
-    { href: 'schedule.html', label: 'Schedules', section: 'menu' }
-  ];
-
+  var links;
   if (user.role === 'admin') {
-    links.push(
+    links = [
+      { href: 'dashboard-monitor.html', label: 'Dashboard', section: 'menu' },
+      { href: 'schedule.html', label: 'Schedules', section: 'menu' },
       { href: 'reports.html', label: 'Reports', section: 'menu' },
       { href: 'admin.html', label: 'Accounts', section: 'menu' }
-    );
-  } else {
-    links.push(
+    ];
+  } else if (user.role === 'personnel') {
+    links = [
+      { href: 'dashboard-monitor.html', label: 'Dashboard', section: 'menu' },
+      { href: 'schedule.html', label: 'Schedules', section: 'menu' },
       { href: 'reports-personnel.html', label: 'Reports', section: 'menu' },
       { href: Aero.accountPageFor(user.role), label: 'Account details', section: 'menu' }
-    );
+    ];
+  } else {
+    links = [
+      { href: 'dashboard-monitor.html', label: 'Dashboard', section: 'menu' },
+      { href: Aero.accountPageFor(user.role), label: 'Account details', section: 'menu' }
+    ];
   }
 
   links.push({ href: 'feedback.html', label: 'Feedback', section: 'menu' });

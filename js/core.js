@@ -244,17 +244,23 @@
     var checks = [
       ['schoolId', validate.schoolId(input.schoolId)],
       ['fullName', validate.fullName(input.fullName)],
-      ['email', validate.email(input.email)],
-      ['phone', validate.phone(input.phone)],
       ['password', validate.password(input.password)],
       ['role', validate.role(input.role)]
     ];
+    if (String(input.role || '').toLowerCase() === 'personnel') {
+      checks.push(['email', validate.email(input.email)]);
+      checks.push(['phone', validate.phone(input.phone)]);
+    }
     for (var i = 0; i < checks.length; i++) {
       if (checks[i][1].error) errors[checks[i][0]] = checks[i][1].error;
       else values[checks[i][0]] = checks[i][1].value;
     }
     if (Object.keys(errors).length) {
       return { ok: false, errors: errors, message: 'Please correct the highlighted fields' };
+    }
+    if (String(values.role || '').toLowerCase() !== 'personnel') {
+      values.email = '';
+      values.phone = '';
     }
     return { ok: true, values: values };
   }
@@ -376,7 +382,7 @@
       if (users[i].schoolId === values.schoolId) {
         errors.schoolId = 'This School ID is already registered';
       }
-      if (users[i].email === values.email) {
+      if (values.email && users[i].email === values.email) {
         errors.email = 'This email is already registered';
       }
     }

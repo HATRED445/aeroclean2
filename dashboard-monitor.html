@@ -136,7 +136,34 @@
     <div class="modal-foot" id="modal-foot">
       <span id="modal-type"></span>
       <span id="modal-seen">Updated &mdash;</span>
+      <div class="row" id="device-report-types" style="gap:8px; flex-wrap:wrap; margin-left:auto" hidden>
+        <button type="button" class="btn btn-primary btn-sm" data-report-type="alert_fixed">Alert Fixed</button>
+        <button type="button" class="btn btn-primary btn-sm" data-report-type="maintenance_complete">Maintenance Complete</button>
+        <button type="button" class="btn btn-primary btn-sm" data-report-type="broken_device">Broken Device</button>
+      </div>
     </div>
+  </div>
+</div>
+
+<div class="modal" id="create-report-modal" role="dialog" aria-modal="true" aria-labelledby="create-report-title" hidden>
+  <div class="modal-header">
+    <h2 class="modal-title" id="create-report-title">Create Report</h2>
+    <button class="modal-close" id="create-report-close" aria-label="Close modal">&times;</button>
+  </div>
+  <div class="modal-content">
+    <form id="create-report-form" class="report-form">
+      <p class="muted" style="margin-bottom:12px">Device: <strong id="report-device-label"></strong></p>
+      <p class="muted" style="margin-bottom:12px">Report type: <strong id="report-type-label"></strong></p>
+      <div class="field">
+        <label for="report-note">Note (optional)</label>
+        <textarea id="report-note" maxlength="500" placeholder="Describe the issue or resolution..."></textarea>
+        <div class="char-count" id="note-char-count">0/500 characters</div>
+      </div>
+      <div class="row" style="justify-content:flex-end; margin-top:8px; gap:10px">
+        <button type="button" class="btn btn-ghost" id="create-report-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </form>
   </div>
 </div>
 
