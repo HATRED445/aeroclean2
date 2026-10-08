@@ -105,7 +105,10 @@
         <div class="modal-room" id="modal-room"></div>
         <div class="modal-meta" id="modal-meta"></div>
       </div>
-      <span class="badge badge-normal" id="modal-status">Normal</span>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+        <span class="badge badge-normal" id="modal-status">Normal</span>
+        <span id="modal-event-badge" class="event-badge"></span>
+      </div>
     </div>
 
     <div class="modal-gauge" id="modal-gauge">
@@ -136,7 +139,7 @@
     <div class="modal-foot" id="modal-foot">
       <span id="modal-type"></span>
       <span id="modal-seen">Updated &mdash;</span>
-      <div class="row" id="device-report-types" style="gap:8px; flex-wrap:wrap; margin-left:auto" hidden>
+      <div class="row" id="device-report-types" style="gap:8px; flex-wrap:nowrap; overflow-x:auto; margin-left:auto; padding-bottom:4px" hidden>
         <button type="button" class="btn btn-primary btn-sm" data-report-type="alert_fixed">Alert Fixed</button>
         <button type="button" class="btn btn-primary btn-sm" data-report-type="maintenance_complete">Maintenance Complete</button>
         <button type="button" class="btn btn-primary btn-sm" data-report-type="broken_device">Broken Device</button>

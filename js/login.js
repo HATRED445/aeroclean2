@@ -6,6 +6,21 @@ Aero.onReady(function () {
   var form = Aero.el('login-form');
   var alertBox = Aero.el('login-alert');
 
+  // Password toggle
+  var passwordToggle = document.querySelector('.password-toggle');
+  var passwordInput = Aero.el('password');
+  if (passwordToggle && passwordInput) {
+    passwordToggle.addEventListener('click', function () {
+      var show = passwordInput.type === 'password';
+      passwordInput.type = show ? 'text' : 'password';
+      passwordToggle.setAttribute('aria-pressed', show);
+      var eyeOpen = passwordToggle.querySelector('.eye-open');
+      var eyeClosed = passwordToggle.querySelector('.eye-closed');
+      if (eyeOpen) eyeOpen.hidden = show;
+      if (eyeClosed) eyeClosed.hidden = !show;
+    });
+  }
+
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     Aero.clearErrors(form);

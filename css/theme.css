@@ -347,6 +347,53 @@ dl {
   box-shadow: var(--shadow-sm);
 }
 
+/* ---------- password toggle ---------- */
+
+.password-field {
+  position: relative;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--glass-line);
+  color: #000;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.16s ease;
+}
+
+.password-toggle:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.password-toggle[aria-pressed="true"] .eye-open {
+  display: none;
+}
+
+.password-toggle[aria-pressed="true"] .eye-closed {
+  display: block;
+}
+
+.password-toggle .eye-closed {
+  display: none;
+}
+
 /* ---------- buttons ---------- */
 
 .btn {
@@ -743,6 +790,34 @@ td.cell-actions {
 .badge-recurrence-weekly {
   background: #fef3c7;
   color: #b45309;
+}
+
+.badge-gradual {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-spike {
+  background: #fed7aa;
+  color: #c2410c;
+}
+
+.badge-odor {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* event badge inline in device foot */
+.event-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 999px;
 }
 
 /* ---------- info grid (dashboards) ---------- */

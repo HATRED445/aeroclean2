@@ -9,6 +9,11 @@ Aero.onReady(function () {
   var PAGE_SIZE = 25;
   var currentPage = 1;
   var filteredReports = [];
+  var searchQuery = '';
+  var typeFilter = '';
+  var dateFrom = null;
+  var dateTo = null;
+  var searchDebounce = null;
 
   var reportsBody = Aero.el('reports-body');
   var reportsEmpty = Aero.el('reports-empty');
@@ -17,6 +22,11 @@ Aero.onReady(function () {
   var modalBackdrop = Aero.el('report-modal-backdrop');
   var detailModal = Aero.el('report-detail-modal');
   var detailClose = Aero.el('report-detail-close');
+  var searchInput = Aero.el('report-search');
+  var typeSelect = Aero.el('filter-type');
+  var dateFromInput = Aero.el('filter-date-from');
+  var dateToInput = Aero.el('filter-date-to');
+  var clearDateBtn = Aero.el('clear-date-filter');
 
   function timeLabel(iso) {
     var date = new Date(iso);
@@ -59,9 +69,39 @@ Aero.onReady(function () {
     var all = Aero.getReportsByUser(user.id);
     filteredReports = all;
     currentPage = 1;
+    applyFilters();
     renderStats();
     renderTable();
     renderPagination();
+  }
+
+  function applyFilters() {
+    filteredReports = Aero.getReportsByUser(user.id).filter(function (r) {
+      if (searchQuery) {
+        var q = searchQuery.toLowerCase();
+        var haystack = (r.deviceRoom + ' ' + r.deviceId + ' ' + (r.note || '')).toLowerCase();
+        if (haystack.indexOf(q) === -1) return false;
+      }
+      if (typeFilter && r.type !== typeFilter) return false;
+      if (dateFrom) {
+        var d = new Date(r.createdAt);
+        if (d < dateFrom) return false;
+      }
+      if (dateTo) {
+        var d = new Date(r.createdAt);
+        var endOfDay = new Date(dateTo);
+        endOfDay.setHours(23, 59, 59, 999);
+        if (d > endOfDay) return false;
+      }
+      return true;
+    });
+    currentPage = 1;
+  }
+
+  function parseDateInput(value) {
+    if (!value) return null;
+    var parts = value.split('-');
+    return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
   }
 
   function renderStats() {
@@ -188,6 +228,52 @@ Aero.onReady(function () {
       renderTable();
       renderPagination();
     }
+  });
+
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(function () {
+      searchQuery = searchInput.value.trim();
+      applyFilters();
+      renderStats();
+      renderTable();
+      renderPagination();
+    }, 150);
+  });
+
+  typeSelect.addEventListener('change', function () {
+    typeFilter = typeSelect.value;
+    applyFilters();
+    renderStats();
+    renderTable();
+    renderPagination();
+  });
+
+  dateFromInput.addEventListener('change', function () {
+    dateFrom = parseDateInput(dateFromInput.value);
+    applyFilters();
+    renderStats();
+    renderTable();
+    renderPagination();
+  });
+
+  dateToInput.addEventListener('change', function () {
+    dateTo = parseDateInput(dateToInput.value);
+    applyFilters();
+    renderStats();
+    renderTable();
+    renderPagination();
+  });
+
+  clearDateBtn.addEventListener('click', function () {
+    dateFromInput.value = '';
+    dateToInput.value = '';
+    dateFrom = null;
+    dateTo = null;
+    applyFilters();
+    renderStats();
+    renderTable();
+    renderPagination();
   });
 
   loadReports();

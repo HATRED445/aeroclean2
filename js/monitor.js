@@ -56,13 +56,15 @@ Aero.onReady(function () {
     return '';
   }
 
-  function getStatusBadgeClass(status) {
+  function getStatusBadgeClass(status, device) {
+    if (device && device.eventType === 'spike' && device.mq137 >= 20) return 'badge-odor';
     if (status === 'alert') return 'badge-alert';
     if (status === 'clean') return 'badge-clean';
     return 'badge-normal';
   }
 
-  function getStatusLabel(status) {
+  function getStatusLabel(status, device) {
+    if (device && device.eventType === 'spike' && device.mq137 >= 20) return 'Odor';
     if (status === 'alert') return 'Odor Alert';
     if (status === 'clean') return 'Clean';
     return 'Normal';
@@ -74,13 +76,22 @@ Aero.onReady(function () {
     return 'dot';
   }
 
+  function getEventBadge(eventType) {
+    if (eventType === 'gradual') return '<span class="badge badge-gradual">Gradual</span>';
+    if (eventType === 'spike') return '<span class="badge badge-spike">Sudden</span>';
+    return '';
+  }
+
   function updateModalContent(device) {
     var idx = Math.max(0, Math.round(device.odorIndex));
     var status = device.status;
 
     var statusEl = Aero.el('modal-status');
-    statusEl.className = 'badge ' + getStatusBadgeClass(status);
-    statusEl.textContent = getStatusLabel(status);
+    statusEl.className = 'badge ' + getStatusBadgeClass(status, device);
+    statusEl.textContent = getStatusLabel(status, device);
+
+    var eventBadgeEl = Aero.el('modal-event-badge');
+    if (eventBadgeEl) eventBadgeEl.innerHTML = getEventBadge(device.eventType);
 
     var gaugeEl = Aero.el('modal-gauge');
     gaugeEl.classList.toggle('is-hot', status === 'alert');
@@ -116,8 +127,8 @@ Aero.onReady(function () {
     Aero.el('modal-meta').textContent = esc(device.nodeId) + ' \u00B7 ' + esc(device.type);
 
     var statusEl = Aero.el('modal-status');
-    statusEl.className = 'badge ' + getStatusBadgeClass(device.status);
-    statusEl.textContent = getStatusLabel(device.status);
+    statusEl.className = 'badge ' + getStatusBadgeClass(device.status, device);
+    statusEl.textContent = getStatusLabel(device.status, device);
 
     var gaugeEl = Aero.el('modal-gauge');
     gaugeEl.classList.toggle('is-hot', device.status === 'alert');
@@ -145,6 +156,9 @@ Aero.onReady(function () {
 
     Aero.el('modal-type').textContent = esc(device.type);
     Aero.el('modal-seen').textContent = 'Updated ' + timeLabel(device.updatedAt);
+
+    var eventBadgeEl = Aero.el('modal-event-badge');
+    if (eventBadgeEl) eventBadgeEl.innerHTML = getEventBadge(device.eventType);
 
     modalBackdrop.hidden = false;
     modal.hidden = false;
@@ -304,6 +318,7 @@ Aero.onReady(function () {
 
         '<div class="device-foot">' +
           '<span data-field="type">' + esc(room.type) + '</span>' +
+          '<span data-field="event-badge" class="event-badge"></span>' +
           '<span data-field="seen">Updated &mdash;</span>' +
         '</div>' +
       '</article>'
@@ -344,8 +359,8 @@ function updateCard(card, device) {
     card.classList.toggle('is-clean', status === 'clean');
 
     var statusEl = card.querySelector('[data-field="status"]');
-    statusEl.className = 'badge ' + getStatusBadgeClass(status);
-    statusEl.textContent = getStatusLabel(status);
+    statusEl.className = 'badge ' + getStatusBadgeClass(status, device);
+    statusEl.textContent = getStatusLabel(status, device);
 
     var gauge = card.querySelector('[data-field="gauge"]');
     gauge.classList.toggle('is-hot', status === 'alert');
@@ -369,6 +384,9 @@ function updateCard(card, device) {
     card.querySelector('[data-field="mq3"]').textContent =
       device.mq3 + ' / ' + thresholds.mq3 + ' ppm';
     card.querySelector('[data-field="dot3"]').className = getDotClass(device, 'mq3');
+
+    var eventBadgeEl = card.querySelector('[data-field="event-badge"]');
+    if (eventBadgeEl) eventBadgeEl.innerHTML = getEventBadge(device.eventType);
 
     card.querySelector('[data-field="seen"]').textContent = 'Updated ' + timeLabel(device.updatedAt);
   }

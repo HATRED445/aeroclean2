@@ -13,6 +13,21 @@ Aero.onReady(function () {
   var emailInput = Aero.el('email');
   var phoneInput = Aero.el('phone');
 
+  // Password toggle
+  var passwordToggle = document.querySelector('.password-toggle');
+  var passwordInput = Aero.el('password');
+  if (passwordToggle && passwordInput) {
+    passwordToggle.addEventListener('click', function () {
+      var show = passwordInput.type === 'password';
+      passwordInput.type = show ? 'text' : 'password';
+      passwordToggle.setAttribute('aria-pressed', show);
+      var eyeOpen = passwordToggle.querySelector('.eye-open');
+      var eyeClosed = passwordToggle.querySelector('.eye-closed');
+      if (eyeOpen) eyeOpen.hidden = show;
+      if (eyeClosed) eyeClosed.hidden = !show;
+    });
+  }
+
   // Initial state: Student is default, hide email/phone
   emailField.hidden = true;
   phoneField.hidden = true;

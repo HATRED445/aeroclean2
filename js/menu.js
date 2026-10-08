@@ -15,6 +15,7 @@ Aero.onReady(function () {
       { href: 'dashboard-monitor.html', label: 'Dashboard', section: 'menu' },
       { href: 'schedule.html', label: 'Schedules', section: 'menu' },
       { href: 'reports.html', label: 'Reports', section: 'menu' },
+      { href: 'recent-alerts.html', label: 'Recent Alerts', section: 'menu' },
       { href: 'admin.html', label: 'Accounts', section: 'menu' }
     ];
   } else if (user.role === 'personnel') {
@@ -22,6 +23,7 @@ Aero.onReady(function () {
       { href: 'dashboard-monitor.html', label: 'Dashboard', section: 'menu' },
       { href: 'schedule.html', label: 'Schedules', section: 'menu' },
       { href: 'reports-personnel.html', label: 'Reports', section: 'menu' },
+      { href: 'recent-alerts.html', label: 'Recent Alerts', section: 'menu' },
       { href: Aero.accountPageFor(user.role), label: 'Account details', section: 'menu' }
     ];
   } else {
