@@ -46,7 +46,7 @@ Aero.onReady(function () {
   }
 
   function accountActions(user) {
-    if (user.role !== 'personnel' && user.role !== 'student') return '<span class="muted">—</span>';
+    if (user.role !== 'personnel') return '<span class="muted">—</span>';
     if (user.status === 'pending') return approveBtn(user.id) + ' ' + declineBtn(user.id);
     if (user.status === 'declined') return '<span class="muted">—</span>';
     if (user.status === 'active') return deactivateBtn(user.id);
@@ -66,7 +66,6 @@ Aero.onReady(function () {
       '<tr>' +
       '<td class="cell-name">' + esc(user.fullName) + '<br><span class="muted">' + esc(user.email) + '</span></td>' +
       '<td>' + esc(user.schoolId) + '</td>' +
-      '<td>' + roleBadge(user.role) + '</td>' +
       '<td>' + statusBadge(user.status) + '</td>' +
       '<td>' + Aero.fmtDate(user.createdAt) + '</td>' +
       '<td class="cell-actions">' + accountActions(user) + '</td>' +
@@ -76,39 +75,35 @@ Aero.onReady(function () {
 
   function renderStats(users) {
     var pending = 0;
-    var students = 0;
     var personnel = 0;
 
     for (var i = 0; i < users.length; i++) {
       var user = users[i];
-      if (user.role === 'student') students++;
       if (user.role === 'personnel') {
         personnel++;
         if (user.status === 'pending') pending++;
       }
     }
 
-    Aero.el('stat-total').textContent = users.length;
+    Aero.el('stat-total').textContent = personnel;
     Aero.el('stat-pending').textContent = pending;
-    Aero.el('stat-students').textContent = students;
     Aero.el('stat-personnel').textContent = personnel;
   }
 
   function renderAccounts(users) {
-    var roleFilter = Aero.el('filter-role').value;
     var statusFilter = Aero.el('filter-status').value;
     var search = Aero.el('filter-search').value.trim().toLowerCase();
 
     var filtered = users
       .filter(function (user) {
-        var roleOk = roleFilter === 'all' || user.role === roleFilter;
+        if (user.role !== 'personnel') return false;
         var statusOk = statusFilter === 'all' || user.status === statusFilter;
         var searchOk = !search ||
           user.fullName.toLowerCase().includes(search) ||
           user.schoolId.toLowerCase().includes(search) ||
           user.email.toLowerCase().includes(search) ||
           user.phone.toLowerCase().includes(search);
-        return roleOk && statusOk && searchOk;
+        return statusOk && searchOk;
       })
       .sort(function (a, b) {
         if (a.role === 'admin') return -1;
@@ -127,7 +122,6 @@ Aero.onReady(function () {
     renderAccounts(users);
   }
 
-  Aero.el('filter-role').addEventListener('change', render);
   Aero.el('filter-status').addEventListener('change', render);
 
   var searchDebounce;

@@ -21,13 +21,13 @@ Aero.onReady(function () {
   Aero.el('avatar').textContent = Aero.initials(user.fullName);
   Aero.el('full-name').textContent = user.fullName;
   Aero.el('greeting').textContent =
-    greeting() + ' · ' + (user.role === 'personnel' ? 'Personnel account' : user.schoolId === 'GUEST001' ? 'Guest account' : 'Student account');
+    greeting() + ' · ' + (user.role === 'personnel' ? 'Personnel account' : 'Guest account');
 
   Aero.el('f-full-name').textContent = user.fullName;
   Aero.el('f-school-id').textContent = user.schoolId;
-  Aero.el('f-email').textContent = user.email;
-  Aero.el('f-phone').textContent = user.phone;
-  Aero.el('f-created').textContent = Aero.fmtDate(user.createdAt);
+  setOptional('f-email', user.email);
+  setOptional('f-phone', user.phone);
+  setOptional('f-created', Aero.fmtDate(user.createdAt));
 
   setOptional(
     'f-status',

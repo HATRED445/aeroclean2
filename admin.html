@@ -36,10 +36,6 @@
         <div class="stat-value" id="stat-pending">0</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Students</div>
-        <div class="stat-value" id="stat-students">0</div>
-      </div>
-      <div class="stat">
         <div class="stat-label">Personnel</div>
         <div class="stat-value" id="stat-personnel">0</div>
       </div>
@@ -53,12 +49,7 @@
             <input type="search" id="filter-search" placeholder="Search name, ID, email..." aria-label="Search accounts">
             <button type="button" id="filter-search-btn" class="btn btn-primary btn-sm">Search</button>
           </div>
-          <select id="filter-role" aria-label="Filter by role">
-            <option value="all">All roles</option>
-            <option value="student">Students</option>
-            <option value="personnel">Personnel</option>
-            <option value="admin">Admins</option>
-          </select>
+          
           <select id="filter-status" aria-label="Filter by status">
             <option value="all">All statuses</option>
             <option value="active" selected>Active</option>
@@ -81,16 +72,15 @@
 
       <div class="table-wrap" id="accounts-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>School ID</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Registered</th>
-              <th style="text-align:right">Action</th>
-            </tr>
-          </thead>
+<thead>
+              <tr>
+                <th>Name</th>
+                <th>School ID</th>
+                <th>Status</th>
+                <th>Registered</th>
+                <th style="text-align:right">Action</th>
+              </tr>
+            </thead>
           <tbody id="accounts-body"></tbody>
         </table>
       </div>

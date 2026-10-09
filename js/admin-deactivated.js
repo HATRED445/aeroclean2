@@ -39,7 +39,7 @@ Aero.onReady(function () {
   function renderDeactivated(users) {
     var deactivated = users
       .filter(function (user) {
-        return (user.role === 'personnel' || user.role === 'student') && user.status === 'declined';
+        return user.role === 'personnel' && user.status === 'declined';
       })
       .sort(function (a, b) {
         return String(b.reviewedAt || '').localeCompare(String(a.reviewedAt || ''));
