@@ -1824,6 +1824,93 @@ td.cell-actions {
   }
 }
 
+/* ---------- odor alert modal ---------- */
+
+.alert-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.alert-timestamp {
+  font-size: 12px;
+  color: var(--on-dark-soft);
+  font-weight: 600;
+}
+
+.alert-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.alert-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.alert-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--on-dark-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 90px;
+}
+
+.alert-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--on-dark);
+  text-align: right;
+  flex: 1;
+}
+
+.alert-readings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.alert-reading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.alert-reading .reading-name {
+  font-weight: 800;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.alert-reading .reading-vals {
+  margin-left: auto;
+  color: var(--on-dark-soft);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.alert-reading .dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+}
+
 /* ---------- reports ---------- */
 
 .badge-report-alert-fixed {

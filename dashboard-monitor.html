@@ -170,6 +170,35 @@
   </div>
 </div>
 
+<div class="modal" id="odor-alert-modal" role="dialog" aria-modal="true" aria-labelledby="odor-alert-title" hidden>
+  <div class="modal-header">
+    <h2 class="modal-title" id="odor-alert-title">Odor Alert Detected</h2>
+    <button class="modal-close" id="odor-alert-close" aria-label="Close alert">&times;</button>
+  </div>
+  <div class="modal-content">
+    <div class="alert-header">
+      <span class="badge badge-alert">Odor Alert</span>
+      <span class="alert-timestamp" id="alert-timestamp"></span>
+    </div>
+    <div class="alert-details">
+      <div class="alert-detail-row"><span class="alert-label">Room:</span><span class="alert-value" id="alert-room"></span></div>
+      <div class="alert-detail-row"><span class="alert-label">Device:</span><span class="alert-value" id="alert-device"></span></div>
+      <div class="alert-detail-row"><span class="alert-label">Node ID:</span><span class="alert-value" id="alert-node-id"></span></div>
+      <div class="alert-detail-row"><span class="alert-label">Event Type:</span><span class="alert-value" id="alert-event-type"></span></div>
+      <div class="alert-detail-row"><span class="alert-label">Duration:</span><span class="alert-value" id="alert-duration"></span></div>
+      <div class="alert-detail-row"><span class="alert-label">Peak PPM:</span><span class="alert-value" id="alert-peak-ppm"></span></div>
+      <div class="alert-readings">
+        <div class="alert-reading"><span class="dot" id="alert-dot137"></span><span class="reading-name">MQ137 (NH\u2083)</span><span class="reading-vals" id="alert-mq137"></span></div>
+        <div class="alert-reading"><span class="dot" id="alert-dot3"></span><span class="reading-name">MQ3 (Alcohol)</span><span class="reading-vals" id="alert-mq3"></span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-primary" id="alert-view-device">View Device Details</button>
+      <button type="button" class="btn btn-ghost" id="alert-dismiss">Dismiss</button>
+    </div>
+  </div>
+</div>
+
 <script src="js/core.js"></script>
 <script src="js/telemetry.js"></script>
 <script src="js/menu.js"></script>

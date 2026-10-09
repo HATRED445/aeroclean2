@@ -17,6 +17,15 @@ Aero.onReady(function () {
   var currentDeviceId = null;
   var modalUnsubscribe = null;
 
+  var alertModal = Aero.el('odor-alert-modal');
+  var alertModalClose = Aero.el('odor-alert-close');
+  var alertViewDevice = Aero.el('alert-view-device');
+  var alertDismiss = Aero.el('alert-dismiss');
+  var currentAlertDeviceIndex = null;
+  var alertEpisodeShown = {};
+  var roomCooldown = {};
+  var COOLDOWN_MS = 20000;
+
   var isPersonnel = user.role === 'personnel';
   var reportTypeButtons = Aero.el('device-report-types');
   var createModal = Aero.el('create-report-modal');
@@ -192,6 +201,83 @@ Aero.onReady(function () {
     document.body.style.overflow = '';
   }
 
+  function openOdorAlertModal(device, index, tracking) {
+    currentAlertDeviceIndex = index;
+    var now = Date.now();
+    var durationMs = now - new Date(tracking.alertStartTime).getTime();
+    var durationSec = Math.round(durationMs / 1000);
+
+    Aero.el('alert-room').textContent = esc(device.room);
+    Aero.el('alert-device').textContent = esc(device.type);
+    Aero.el('alert-node-id').textContent = esc(device.nodeId);
+    Aero.el('alert-event-type').textContent = 'Gradual';
+    Aero.el('alert-duration').textContent = durationSec + 's';
+    Aero.el('alert-peak-ppm').textContent = tracking.peakPpm + ' ppm';
+    Aero.el('alert-timestamp').textContent = 'Detected ' + new Date().toLocaleTimeString();
+
+    var m137Hot = device.mq137 > thresholds.mq137;
+    var m3Hot = device.mq3 > thresholds.mq3;
+
+    Aero.el('alert-mq137').textContent = device.mq137 + ' / ' + thresholds.mq137 + ' ppm';
+    Aero.el('alert-dot137').className = 'dot' + (m137Hot ? ' is-hot' : '');
+
+    Aero.el('alert-mq3').textContent = device.mq3 + ' / ' + thresholds.mq3 + ' ppm';
+    Aero.el('alert-dot3').className = 'dot' + (m3Hot ? ' is-hot' : '');
+
+    modalBackdrop.hidden = false;
+    alertModal.hidden = false;
+    requestAnimationFrame(function () {
+      modalBackdrop.classList.add('is-open');
+      alertModal.classList.add('is-open');
+    });
+    alertModalClose.focus();
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeOdorAlertModal() {
+    modalBackdrop.classList.remove('is-open');
+    alertModal.classList.remove('is-open');
+    setTimeout(function () {
+      modalBackdrop.hidden = true;
+      alertModal.hidden = true;
+      currentAlertDeviceIndex = null;
+    }, 250);
+    document.body.style.overflow = '';
+  }
+
+  function checkAndShowOdorAlert(snapshot) {
+    for (var i = 0; i < snapshot.devices.length; i++) {
+      var device = snapshot.devices[i];
+      var tracking = device.alertTracking;
+      var nodeId = device.nodeId;
+
+      var isGradualAlert = device.status === 'alert' &&
+                           device.eventType === 'gradual' &&
+                           tracking.isInAlert;
+
+      if (isGradualAlert) {
+        var durationMs = Date.now() - new Date(tracking.alertStartTime).getTime();
+        var episodeKey = tracking.alertStartTime;
+        var now = Date.now();
+        var lastAlertTime = roomCooldown[nodeId] || 0;
+
+        if (durationMs >= 8000 && !alertEpisodeShown[episodeKey] && (now - lastAlertTime) >= COOLDOWN_MS) {
+          alertEpisodeShown[episodeKey] = true;
+          roomCooldown[nodeId] = now;
+          openOdorAlertModal(device, i, tracking);
+        }
+      }
+    }
+
+    var cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    for (var key in alertEpisodeShown) {
+      if (new Date(key).getTime() < cutoff) delete alertEpisodeShown[key];
+    }
+    for (var nId in roomCooldown) {
+      if (roomCooldown[nId] < cutoff) delete roomCooldown[nId];
+    }
+  }
+
   function updateCharCount() {
     var len = noteTextarea.value.length;
     charCount.textContent = len + '/500 characters';
@@ -266,6 +352,7 @@ Aero.onReady(function () {
   function handleKeydown(e) {
     if (e.key === 'Escape') {
       if (createModal && !createModal.hidden) { closeCreateModal(); return; }
+      if (!alertModal.hidden) { closeOdorAlertModal(); return; }
       if (!modal.hidden) closeModal();
     }
   }
@@ -273,11 +360,18 @@ Aero.onReady(function () {
   function handleBackdropClick(e) {
     if (e.target === modalBackdrop) {
       if (createModal && !createModal.hidden) { closeCreateModal(); return; }
+      if (!alertModal.hidden) { closeOdorAlertModal(); return; }
       closeModal();
     }
   }
 
   modalClose.addEventListener('click', closeModal);
+  alertModalClose.addEventListener('click', closeOdorAlertModal);
+  alertDismiss.addEventListener('click', closeOdorAlertModal);
+  alertViewDevice.addEventListener('click', function () {
+    closeOdorAlertModal();
+    if (currentAlertDeviceIndex !== null) openModal(currentAlertDeviceIndex);
+  });
   modalBackdrop.addEventListener('click', handleBackdropClick);
   document.addEventListener('keydown', handleKeydown);
 
@@ -439,6 +533,8 @@ function updateCard(card, device) {
     for (var i = 0; i < cards.length; i++) {
       if (snapshot.devices[i]) updateCard(cards[i], snapshot.devices[i]);
     }
+
+    checkAndShowOdorAlert(snapshot);
   }
 
   function renderLive() {
