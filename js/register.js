@@ -28,42 +28,18 @@ Aero.onReady(function () {
     });
   }
 
-  // Initial state: Student is default, hide email/phone
-  emailField.hidden = true;
-  phoneField.hidden = true;
-  emailInput.disabled = true;
-  phoneInput.disabled = true;
+  // Personnel is the only option, show email/phone fields
+  emailField.hidden = false;
+  phoneField.hidden = false;
+  emailInput.disabled = false;
+  phoneInput.disabled = false;
 
-  for (var i = 0; i < roleButtons.length; i++) {
-    roleButtons[i].addEventListener('click', function (event) {
-      var button = event.currentTarget;
-      var selected = button.getAttribute('data-role');
-      roleInput.value = selected;
-
-      for (var j = 0; j < roleButtons.length; j++) {
-        var isActive = roleButtons[j] === button;
-        roleButtons[j].classList.toggle('is-active', isActive);
-        roleButtons[j].setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      }
-
-      var isPersonnel = selected === 'personnel';
-      emailField.hidden = !isPersonnel;
-      phoneField.hidden = !isPersonnel;
-      emailInput.disabled = !isPersonnel;
-      phoneInput.disabled = !isPersonnel;
-
-      var note = Aero.el('register-alert');
-      if (selected === 'personnel') {
-        Aero.setAlert(
-          note,
-          'Personnel accounts are reviewed and approved by an administrator before sign-in.',
-          'info'
-        );
-      } else {
-        Aero.setAlert(note, '');
-      }
-    });
-  }
+  var note = Aero.el('register-alert');
+  Aero.setAlert(
+    note,
+    'Personnel accounts are reviewed and approved by an administrator before sign-in.',
+    'info'
+  );
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();

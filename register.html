@@ -13,12 +13,12 @@
       <div class="brand-mark">A</div>
       <div class="brand-name">Aero<span>Clean</span></div>
     </div>
-    <p class="brand-sub">Register a student or personnel account</p>
+    <p class="brand-sub">Register a personnel account</p>
 
     <section class="card">
       <div id="register-view">
         <h1 class="card-title">Create your account</h1>
-        <p class="card-sub">Students are activated instantly. Personnel accounts require administrator approval.</p>
+        <p class="card-sub">Personnel accounts require administrator approval.</p>
 
         <form id="register-form" class="stack" novalidate>
           <div class="field">
@@ -65,10 +65,9 @@
           <div class="field">
             <span class="field-label">Account type</span>
             <div class="role-toggle" role="group" aria-label="Account type">
-              <button type="button" class="role-btn is-active" data-role="student" aria-pressed="true">Student</button>
-              <button type="button" class="role-btn" data-role="personnel" aria-pressed="false">Personnel</button>
+              <button type="button" class="role-btn is-active" data-role="personnel" aria-pressed="true">Personnel</button>
             </div>
-            <input id="role" name="role" type="hidden" value="student">
+            <input id="role" name="role" type="hidden" value="personnel">
             <p class="field-error" data-error-for="role"></p>
           </div>
 

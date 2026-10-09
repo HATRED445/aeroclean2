@@ -53,7 +53,7 @@ Aero.onReady(function () {
         '<div class="drawer-avatar">' + Aero.esc(Aero.initials(user.fullName)) + '</div>' +
         '<div>' +
           '<div class="drawer-name">' + Aero.esc(user.fullName) + '</div>' +
-          '<div class="drawer-meta">' + Aero.esc(user.role) + ' · ' + Aero.esc(user.schoolId) + '</div>' +
+          '<div class="drawer-meta">' + Aero.esc(user.schoolId === 'GUEST001' ? 'guest' : user.role) + ' · ' + Aero.esc(user.schoolId) + '</div>' +
         '</div>' +
       '</div>' +
       '<nav class="drawer-nav">' +

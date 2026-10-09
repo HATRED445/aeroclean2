@@ -27,6 +27,7 @@ Aero.onReady(function () {
   var schedulesWrap = Aero.el('schedules-wrap');
   var pagination = Aero.el('pagination');
   var actionsTh = Aero.el('actions-th');
+  var personnelTh = Aero.el('personnel-th');
   var filterSearch = Aero.el('filter-search');
   var filterRoom = Aero.el('filter-room');
   var filterRecurrence = Aero.el('filter-recurrence');
@@ -51,10 +52,14 @@ Aero.onReady(function () {
   var scheduleRecurrenceEnd = Aero.el('schedule-recurrence-end');
   var conflictWarning = Aero.el('conflict-warning');
   var scheduleCancel = Aero.el('schedule-cancel');
+  var schedulePersonnel = Aero.el('schedule-personnel');
+  var schedulePersonnelField = Aero.el('schedule-personnel-field');
 
   if (isAdmin) {
     adminActions.hidden = false;
     actionsTh.hidden = false;
+    personnelTh.hidden = false;
+    schedulePersonnelField.hidden = false;
   }
 
   function populateRoomSelects() {
@@ -63,6 +68,15 @@ Aero.onReady(function () {
     }).join('');
     scheduleRoom.innerHTML = '<option value="">Select a room</option>' + options;
     filterRoom.innerHTML = '<option value="all">All Rooms</option>' + options;
+  }
+
+  function populatePersonnelSelect() {
+    var users = Aero.allUsers();
+    var personnel = users.filter(function (u) { return u.role === 'personnel' && u.status === 'active'; });
+    var options = personnel.map(function (p) {
+      return '<option value="' + esc(p.id) + '">' + esc(p.fullName) + ' (' + esc(p.schoolId) + ')</option>';
+    }).join('');
+    schedulePersonnel.innerHTML = '<option value="">Unassigned</option>' + options;
   }
 
   function getDefaultDate() {
@@ -116,6 +130,7 @@ Aero.onReady(function () {
       var end = scheduleEnd.value;
       var recurrence = scheduleForm.querySelector('input[name="recurrence"]:checked').value;
       var recurrenceEnd = scheduleRecurrenceEnd.value || null;
+      var personnelId = schedulePersonnel.value || null;
 
       if (!roomId || !date || !start || !end) {
         conflictWarning.hidden = true;
@@ -124,10 +139,11 @@ Aero.onReady(function () {
       }
 
       var excludeId = editScheduleId;
-      var result = Aero.checkConflicts(roomId, date, start, end, recurrence, recurrenceEnd, excludeId);
+      var result = Aero.checkConflicts(roomId, date, start, end, recurrence, recurrenceEnd, excludeId, personnelId);
       if (result.conflict) {
         conflictWarning.hidden = false;
-        conflictWarning.textContent = 'Conflict: "' + esc(result.existing.title) + '" on ' + fmtDate(result.occurrence.date) + ' at ' + formatTime12h(result.occurrence.startTime) + ' - ' + formatTime12h(result.occurrence.endTime);
+        var conflictType = result.type === 'personnel' ? 'Personnel conflict: ' : 'Room conflict: ';
+        conflictWarning.textContent = conflictType + '"' + esc(result.existing.title) + '" on ' + fmtDate(result.occurrence.date) + ' at ' + formatTime12h(result.occurrence.startTime) + ' - ' + formatTime12h(result.occurrence.endTime);
       } else {
         conflictWarning.hidden = true;
         conflictWarning.textContent = '';
@@ -158,6 +174,15 @@ Aero.onReady(function () {
       });
     }
 
+    if (!isAdmin) {
+      var currentUser = Aero.currentUser();
+      if (currentUser) {
+        occurrences = occurrences.filter(function (occ) {
+          return occ.personnelId === currentUser.id;
+        });
+      }
+    }
+
     filteredOccurrences = occurrences;
     currentPage = 1;
     renderTable();
@@ -165,8 +190,10 @@ Aero.onReady(function () {
   }
 
   function renderTable() {
+    var displayOccurrences = filteredOccurrences;
+
     var start = (currentPage - 1) * PAGE_SIZE;
-    var pageOccurrences = filteredOccurrences.slice(start, start + PAGE_SIZE);
+    var pageOccurrences = displayOccurrences.slice(start, start + PAGE_SIZE);
 
     if (pageOccurrences.length === 0) {
       schedulesBody.innerHTML = '';
@@ -181,6 +208,7 @@ Aero.onReady(function () {
 
     schedulesBody.innerHTML = pageOccurrences.map(function (occ) {
       var actionsHtml = '';
+      var personnelHtml = isAdmin ? '<td>' + esc(occ.personnelName || 'Unassigned') + '</td>' : '';
       if (isAdmin) {
         actionsHtml =
           '<button type="button" class="btn btn-sm btn-light" data-action="edit" data-base-id="' + esc(occ.baseId) + '" aria-label="Edit schedule">' +
@@ -196,6 +224,7 @@ Aero.onReady(function () {
         '<td>' + esc(occ.title) + (occ.description ? '<br><span class="muted">' + esc(occ.description.slice(0, 60)) + (occ.description.length > 60 ? '\u2026' : '') + '</span>' : '') + '</td>' +
         '<td>' + recurrenceBadge(occ.recurrence) + '</td>' +
         '<td>' + statusBadge(occ.status) + '</td>' +
+        personnelHtml +
         '<td class="cell-actions">' + actionsHtml + '</td>' +
         '</tr>'
       );
@@ -241,6 +270,7 @@ Aero.onReady(function () {
     scheduleDate.value = getDefaultDate();
     scheduleStart.value = '09:00';
     scheduleEnd.value = '10:00';
+    schedulePersonnel.value = '';
     updateDescCharCount();
     updateRecurrenceEndVisibility();
     conflictWarning.hidden = true;
@@ -279,6 +309,7 @@ Aero.onReady(function () {
     if (recurrenceRadio) recurrenceRadio.checked = true;
     updateRecurrenceEndVisibility();
     scheduleRecurrenceEnd.value = schedule.recurrenceEnd || '';
+    schedulePersonnel.value = schedule.personnelId || '';
     conflictWarning.hidden = true;
     conflictWarning.textContent = '';
     modalBackdrop.hidden = false;
@@ -312,6 +343,7 @@ Aero.onReady(function () {
     var desc = scheduleDesc.value.trim();
     var recurrence = scheduleForm.querySelector('input[name="recurrence"]:checked').value;
     var recurrenceEnd = scheduleRecurrenceEnd.value || null;
+    var personnelId = schedulePersonnel.value || null;
 
     if (!roomId) { scheduleRoom.focus(); scheduleRoom.classList.add('has-error'); return; }
     if (!date) { scheduleDate.focus(); scheduleDate.classList.add('has-error'); return; }
@@ -327,7 +359,8 @@ Aero.onReady(function () {
       title: title,
       description: desc,
       recurrence: recurrence,
-      recurrenceEnd: recurrenceEnd
+      recurrenceEnd: recurrenceEnd,
+      personnelId: personnelId
     };
 
     var result;
@@ -378,6 +411,7 @@ Aero.onReady(function () {
 
     var printWindow = window.open('', '_blank');
     var rows = occurrences.map(function (occ) {
+      var personnelCell = isAdmin ? '<td>' + esc(occ.personnelName || 'Unassigned') + '</td>' : '';
       return '<tr>' +
         '<td>' + esc(occ.roomName) + '</td>' +
         '<td>' + fmtDate(occ.date) + '</td>' +
@@ -385,8 +419,16 @@ Aero.onReady(function () {
         '<td>' + esc(occ.title) + (occ.description ? '<br><span style="font-size:12px; color:#666;">' + esc(occ.description) + '</span>' : '') + '</td>' +
         '<td>' + Aero.RECURRENCE_LABELS[occ.recurrence] + '</td>' +
         '<td>' + occ.status + '</td>' +
+        personnelCell +
         '</tr>';
     }).join('');
+
+    var headerCols = '<th>Room</th><th>Date</th><th>Time</th><th>Title</th><th>Recurrence</th><th>Status</th>';
+    var colspan = 6;
+    if (isAdmin) {
+      headerCols += '<th>Personnel</th>';
+      colspan = 7;
+    }
 
     printWindow.document.write(
       '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Schedules - AeroClean</title>' +
@@ -401,8 +443,8 @@ Aero.onReady(function () {
       '</style></head><body>' +
       '<h1>Schedules</h1>' +
       '<p class="subtitle">AeroClean \u00b7 ' + fmtDate(new Date().toISOString()) + ' \u00b7 ' + (from === getDefaultRange().from && to === getDefaultRange().to ? 'Next 30 Days' : from + ' to ' + to) + '</p>' +
-      '<table><thead><tr><th>Room</th><th>Date</th><th>Time</th><th>Title</th><th>Recurrence</th><th>Status</th></tr></thead>' +
-      '<tbody>' + (rows || '<tr><td colspan="6" style="text-align:center;color:#999">No schedules</td></tr>') + '</tbody></table>' +
+      '<table><thead><tr>' + headerCols + '</tr></thead>' +
+      '<tbody>' + (rows || '<tr><td colspan="' + colspan + '" style="text-align:center;color:#999">No schedules</td></tr>') + '</tbody></table>' +
       '</body></html>'
     );
     printWindow.document.close();
@@ -423,6 +465,7 @@ Aero.onReady(function () {
   scheduleEnd.addEventListener('change', function () { this.classList.remove('has-error'); checkConflictsAndWarn(); });
   scheduleTitle.addEventListener('input', function () { this.classList.remove('has-error'); });
   scheduleRecurrenceEnd.addEventListener('change', checkConflictsAndWarn);
+  schedulePersonnel.addEventListener('change', checkConflictsAndWarn);
 
   modalBackdrop.addEventListener('click', function (e) {
     if (e.target === modalBackdrop) closeModal();
@@ -485,6 +528,7 @@ Aero.onReady(function () {
   });
 
   populateRoomSelects();
+  populatePersonnelSelect();
   setDateRange(getDefaultRange().from, getDefaultRange().to);
   loadSchedules();
 });

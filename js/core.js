@@ -318,10 +318,32 @@
     });
   }
 
+  function seedGuestStudent(users) {
+    for (var i = 0; i < users.length; i++) {
+      if (users[i].schoolId === 'GUEST001') return;
+    }
+    var schoolId = normalizeSchoolId('GUEST001');
+    var salt = makeSalt();
+    users.push({
+      id: randomId('u'),
+      schoolId: schoolId,
+      fullName: 'Guest',
+      email: '',
+      phone: '',
+      salt: salt,
+      passwordHash: hashPassword('guest123', salt),
+      role: 'student',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      reviewedAt: null
+    });
+  }
+
   function allUsers() {
     var users = readJson(USERS_KEY, []);
     if (!Array.isArray(users)) users = [];
     seedAdmin(users);
+    seedGuestStudent(users);
     try {
       global.localStorage.setItem(USERS_KEY, JSON.stringify(users));
     } catch (err) {
@@ -788,6 +810,12 @@
     return 'Unknown Room';
   }
 
+  function getPersonnelName(personnelId) {
+    if (!personnelId) return 'Unassigned';
+    var user = findUser(personnelId);
+    return user ? user.fullName : 'Unknown';
+  }
+
   function timeToMinutes(time24) {
     var parts = String(time24).split(':');
     return parseInt(parts[0], 10) * 60 + parseInt(parts[1] || 0, 10);
@@ -848,6 +876,9 @@
     var current = new Date(baseDate + 'T00:00:00');
     var maxIterations = 400;
 
+    var personnelId = schedule.personnelId || null;
+    var personnelName = schedule.personnelName || getPersonnelName(personnelId);
+
     if (recurrence === RECURRENCE_TYPES.NONE) {
       if (baseDate >= rangeStart && baseDate <= rangeEnd) {
         occurrences.push({
@@ -862,7 +893,9 @@
           roomName: schedule.roomName,
           recurrence: recurrence,
           status: getEventStatus(baseDate, schedule.startTime, schedule.endTime),
-          isRecurringInstance: false
+          isRecurringInstance: false,
+          personnelId: personnelId,
+          personnelName: personnelName
         });
       }
       return occurrences;
@@ -886,7 +919,9 @@
           roomName: schedule.roomName,
           recurrence: recurrence,
           status: getEventStatus(dateStr, schedule.startTime, schedule.endTime),
-          isRecurringInstance: true
+          isRecurringInstance: true,
+          personnelId: personnelId,
+          personnelName: personnelName
         });
       }
       current.setDate(current.getDate() + stepDays);
@@ -918,7 +953,7 @@
     return s1 < e2 && s2 < e1;
   }
 
-  function checkConflicts(roomId, date, startTime, endTime, recurrence, recurrenceEnd, excludeId) {
+  function checkConflicts(roomId, date, startTime, endTime, recurrence, recurrenceEnd, excludeId, personnelId) {
     var schedules = readSchedules();
     var checkStart = date;
     var checkEnd = recurrenceEnd || addDays(date, 30);
@@ -931,6 +966,20 @@
       for (var j = 0; j < occs.length; j++) {
         if (timeOverlap(startTime, endTime, occs[j].startTime, occs[j].endTime)) {
           return { conflict: true, existing: s, occurrence: occs[j] };
+        }
+      }
+    }
+    if (personnelId) {
+      for (var k = 0; k < schedules.length; k++) {
+        var s2 = schedules[k];
+        if (s2.id === excludeId) continue;
+        if (s2.personnelId !== personnelId) continue;
+        if (s2.status === 'cancelled') continue;
+        var occs2 = getOccurrences(s2, checkStart, checkEnd);
+        for (var m = 0; m < occs2.length; m++) {
+          if (timeOverlap(startTime, endTime, occs2[m].startTime, occs2[m].endTime)) {
+            return { conflict: true, type: 'personnel', existing: s2, occurrence: occs2[m] };
+          }
         }
       }
     }
@@ -974,7 +1023,7 @@
     var result = validateSchedule(data);
     if (!result.ok) return result;
     var values = result.values;
-    var conflict = checkConflicts(values.roomId, values.date, values.startTime, values.endTime, values.recurrence, values.recurrenceEnd, null);
+    var conflict = checkConflicts(values.roomId, values.date, values.startTime, values.endTime, values.recurrence, values.recurrenceEnd, null, values.personnelId || null);
     if (conflict.conflict) {
       return { ok: false, message: 'Schedule conflicts with existing schedule on ' + conflict.occurrence.date + ' at ' + formatTime12h(conflict.occurrence.startTime), errors: { date: 'Conflict with existing schedule' } };
     }
@@ -991,7 +1040,9 @@
       createdAt: new Date().toISOString(),
       recurrence: values.recurrence || RECURRENCE_TYPES.NONE,
       recurrenceEnd: values.recurrenceEnd || null,
-      status: 'active'
+      status: 'active',
+      personnelId: values.personnelId || null,
+      personnelName: getPersonnelName(values.personnelId)
     };
     var schedules = readSchedules();
     schedules.push(schedule);
@@ -1018,11 +1069,14 @@
     var result = validateSchedule(merged);
     if (!result.ok) return result;
     var values = result.values;
-    var conflict = checkConflicts(values.roomId, values.date, values.startTime, values.endTime, values.recurrence, values.recurrenceEnd, id);
+    var conflict = checkConflicts(values.roomId, values.date, values.startTime, values.endTime, values.recurrence, values.recurrenceEnd, id, values.personnelId || null);
     if (conflict.conflict) {
       return { ok: false, message: 'Schedule conflicts with existing schedule on ' + conflict.occurrence.date + ' at ' + formatTime12h(conflict.occurrence.startTime), errors: { date: 'Conflict with existing schedule' } };
     }
-    schedules[index] = Object.assign({}, existing, values);
+    schedules[index] = Object.assign({}, existing, values, {
+      personnelId: values.personnelId || null,
+      personnelName: getPersonnelName(values.personnelId)
+    });
     writeSchedules(schedules);
     return { ok: true, schedule: schedules[index] };
   }

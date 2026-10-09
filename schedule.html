@@ -69,6 +69,7 @@
               <th>Title</th>
               <th>Recurrence</th>
               <th>Status</th>
+              <th id="personnel-th" hidden>Personnel</th>
               <th id="actions-th" hidden>Actions</th>
             </tr>
           </thead>
@@ -95,6 +96,12 @@
         <label for="schedule-room">Room <span style="color:var(--bad)">*</span></label>
         <select id="schedule-room" required>
           <option value="">Select a room</option>
+        </select>
+      </div>
+      <div class="field" id="schedule-personnel-field" hidden>
+        <label for="schedule-personnel">Assigned Personnel <span class="muted">(optional)</span></label>
+        <select id="schedule-personnel">
+          <option value="">Unassigned</option>
         </select>
       </div>
       <div class="field">

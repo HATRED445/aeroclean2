@@ -21,6 +21,44 @@ Aero.onReady(function () {
     });
   }
 
+  // Guest login
+  var guestBtn = Aero.el('guest-login-btn');
+  if (guestBtn) {
+    guestBtn.addEventListener('click', function () {
+      Aero.setAlert(alertBox, '');
+      var result = Aero.authenticate('GUEST001', 'guest123');
+      if (!result.ok) {
+        // Try to create guest account if it doesn't exist
+        var regResult = Aero.register({
+          schoolId: 'GUEST001',
+          password: 'guest123',
+          fullName: 'Guest',
+          email: '',
+          phone: '',
+          role: 'student'
+        });
+        if (regResult.ok) {
+          result = Aero.authenticate('GUEST001', 'guest123');
+        }
+      }
+      if (!result.ok) {
+        Aero.setAlert(alertBox, result.message || 'Guest login failed', 'error');
+        return;
+      }
+      if (result.user.fullName === 'Guest Student') {
+        var users = JSON.parse(localStorage.getItem('aeroclean.users') || '[]');
+        var idx = users.findIndex(function (u) { return u.schoolId === 'GUEST001'; });
+        if (idx !== -1) {
+          users[idx].fullName = 'Guest';
+          localStorage.setItem('aeroclean.users', JSON.stringify(users));
+          result.user.fullName = 'Guest';
+        }
+      }
+      Aero.login(result.user);
+      window.location.href = Aero.homeFor(result.user.role);
+    });
+  }
+
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     Aero.clearErrors(form);
